@@ -1,0 +1,25 @@
+import { randomUUID } from 'node:crypto';
+import { z } from 'zod';
+import { route, origin, json } from '@/lib/http';
+import { live, required, HttpError } from '@/lib/config';
+import { walletSchema } from '@/lib/auth';
+import { brands, productId } from '@/lib/catalog';
+import { rateLimit } from '@/lib/redis';
+import { reloadly } from '@/lib/reloadly';
+import { solPrice } from '@/lib/jupiter';
+import { debitForCents } from '@/lib/accounting';
+import { available } from '@/lib/rewards';
+import { db } from '@/lib/db';
+export const runtime = 'nodejs';
+export const POST = route(async request => {
+  origin(request); live('CLAIMS_ENABLED');
+  const input = z.object({wallet:walletSchema,brand:z.enum(brands),amount:z.union([z.literal(5),z.literal(10),z.literal(25),z.literal(50)])}).parse(await request.json());
+  await rateLimit(`challenge:${input.wallet}`,5);
+  await reloadly.validateProduct(productId(input.brand),input.amount);
+  const debit = debitForCents(input.amount*100, await solPrice());
+  if (await available(input.wallet) < debit) throw new HttpError(409,'Insufficient rewards, including the $0.50 service fee.');
+  const nonce = randomUUID(), issued = new Date(), expiresAt = new Date(issued.getTime()+120000);
+  const message = `Redeem $${input.amount.toFixed(2)} on Perks: ${nonce}\nWallet: ${input.wallet}\nBrand: ${input.brand}\nService fee: $0.50\nDebit lamports: ${debit}\nOrigin: ${new URL(required('APP_ORIGIN')).origin}\nIssued: ${issued.toISOString()}\nExpires: ${expiresAt.toISOString()}`;
+  const challenge = await db.challenge.create({data:{walletAddress:input.wallet, message,brand:input.brand,amountCents:input.amount*100,debitLamports:debit.toString(),expiresAt}});
+  return json({challengeId:challenge.id,message,expiresAt});
+});

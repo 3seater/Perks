@@ -1,0 +1,209 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+model Token {
+  mintAddress String @id
+  name String
+  symbol String
+  description String
+  imageUrl String
+  metadataUri String
+  creatorWallet String
+  status String @default("PENDING")
+  launchSignature String? @unique
+  launchSlot BigInt?
+  accumulatedIndex Decimal @default(0) @db.Decimal(78, 0)
+  totalSupply Decimal @default(0) @db.Decimal(78, 0)
+  feeLamports Decimal @default(0) @db.Decimal(78, 0)
+  curveProgress Float @default(0)
+  createdAt DateTime @default(now())
+  holders UserTokenCheckpoint[]
+  trades Trade[]
+}
+model UserTokenCheckpoint {
+  id String @id @default(uuid())
+  walletAddress String
+  tokenMint String
+  balance Decimal @default(0) @db.Decimal(78, 0)
+  lastIndex Decimal @default(0) @db.Decimal(78, 0)
+  accruedScaled Decimal @default(0) @db.Decimal(78, 0)
+  token Token @relation(fields: [tokenMint], references: [mintAddress])
+  updatedAt DateTime @updatedAt
+  @@unique([walletAddress, tokenMint])
+}
+model Challenge {
+  id String @id @default(uuid())
+  walletAddress String
+  message String
+  brand String
+  amountCents Int
+  debitLamports Decimal @db.Decimal(78, 0)
+  expiresAt DateTime
+  usedAt DateTime?
+  order RedemptionOrder?
+}
+model RedemptionOrder {
+  id String @id @default(uuid())
+  challengeId String @unique
+  challenge Challenge @relation(fields: [challengeId], references: [id])
+  customIdentifier String @unique
+  walletAddress String
+  brandName String
+  productId Int
+  amountCents Int
+  debitLamports Decimal @db.Decimal(78, 0)
+  reloadlyOrderId String? @unique
+  voucherEncrypted String?
+  status String @default("RESERVED")
+  errorCode String?
+  debits RedemptionDebit[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([walletAddress, createdAt])
+}
+model RedemptionDebit {
+  id String @id @default(uuid())
+  orderId String
+  order RedemptionOrder @relation(fields: [orderId], references: [id])
+  tokenMint String
+  lamports Decimal @db.Decimal(78, 0)
+  @@unique([orderId, tokenMint])
+}
+model TreasurySwap {
+  id String @id
+  signature String @unique
+  signedTransaction String
+  lastValidBlockHeight Int
+  status String @default("PREPARED")
+  createdAt DateTime @default(now())
+}
+model ChainCursor {
+  id String @id @default("solana")
+  slot BigInt
+  updatedAt DateTime @updatedAt
+}
+model ChainReceipt {
+  signature String @id
+  slot BigInt
+  createdAt DateTime @default(now())
+}
+model Trade {
+  id String @id
+  tokenMint String
+  token Token @relation(fields: [tokenMint], references: [mintAddress])
+  volumeLamports Decimal @db.Decimal(78, 0)
+  occurredAt DateTime
+  @@index([tokenMint, occurredAt])
+}
+
+// Independent from legacy holder checkpoints. Existing balances are NOT migrated.
+// Freeze the prototype rate across restarts; versioned effective-slot policies come next.
+model RewardPolicy {
+  id String @id
+  rewardBps Int
+  createdAt DateTime @default(now())
+}
+
+model RewardLot {
+  id String @id
+  signature String
+  eventIndex Int
+  venue String
+  slot BigInt
+  tokenMint String
+  walletAddress String?
+  attribution String
+  side String
+  feeLamports Decimal @db.Decimal(78, 0)
+  rewardBps Int
+  collectedLamports Decimal @default(0) @db.Decimal(78, 0)
+  reservedLamports Decimal @default(0) @db.Decimal(78, 0)
+  spentLamports Decimal @default(0) @db.Decimal(78, 0)
+  createdAt DateTime @default(now())
+  allocations RewardAllocation[]
+  funding RewardFunding[]
+  @@unique([signature, venue, eventIndex])
+  @@index([walletAddress, slot])
+}
+
+model RewardCollection {
+  id String @id
+  slot BigInt
+  venue String
+  receivedLamports Decimal @db.Decimal(78, 0)
+  allocatedLamports Decimal @db.Decimal(78, 0)
+  evidence String
+  createdAt DateTime @default(now())
+  funding RewardFunding[]
+}
+
+model RewardFunding {
+  collectionId String
+  lotId String
+  lamports Decimal @db.Decimal(78, 0)
+  collection RewardCollection @relation(fields: [collectionId], references: [id])
+  lot RewardLot @relation(fields: [lotId], references: [id])
+  @@id([collectionId, lotId])
+}
+
+model RewardReservation {
+  id String @id
+  walletAddress String
+  kind String
+  amountLamports Decimal @db.Decimal(78, 0)
+  status String @default("RESERVED")
+  settlementReference String? @unique
+  resolutionEvidence String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  allocations RewardAllocation[]
+  @@index([walletAddress, status])
+}
+
+model RewardAllocation {
+  reservationId String
+  lotId String
+  lamports Decimal @db.Decimal(78, 0)
+  reservation RewardReservation @relation(fields: [reservationId], references: [id])
+  lot RewardLot @relation(fields: [lotId], references: [id])
+  @@id([reservationId, lotId])
+}
+
+model CardCheckout {
+  id String @id
+  walletAddress String
+  brand String
+  amount String
+  currency String
+  message String
+  payloadEncrypted String
+  maxDebitLamports Decimal @db.Decimal(78,0)
+  expiresAt DateTime
+  status String @default("QUOTED")
+  authorization String?
+  providerOrderId String? @unique
+  providerEncrypted String?
+  paymentAddress String?
+  paymentLamports Decimal? @db.Decimal(78,0)
+  paymentExpiresAt DateTime?
+  signedTransaction String?
+  paymentSignature String? @unique
+  lastValidBlockHeight Int?
+  actualDebitLamports Decimal? @db.Decimal(78,0)
+  publicError String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([walletAddress,createdAt])
+  @@index([status,createdAt])
+}
+
+model PaymentWorkerState {
+  id String @id
+  publicKey String
+  heartbeatAt DateTime
+  balanceLamports Decimal @db.Decimal(78,0)
+}

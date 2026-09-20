@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1500,initial-scale=1">
+<title>Perks — Frosted glass bubbles</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;padding:0;width:1500px;min-width:1500px;background:#0450fa}
+.banner{position:relative;width:1500px;height:500px;overflow:hidden;background:linear-gradient(108.435deg,#044ff7,#17a8fd);font-family:Arial,Helvetica,sans-serif;color:#111318}
+.bubble{position:absolute;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pill{height:200px;border-radius:100px;letter-spacing:-4px;font-weight:400;line-height:1}
+.circle{width:200px;height:200px;border-radius:50%}
+.trade{left:70px;top:61.01px;width:500px;transform:rotate(-24deg);background:#111318;color:white;font-size:118px}
+.tokens{left:751px;top:55.29px;width:550px;transform:rotate(15deg);background:#91deff;font-size:114px}
+.top-arrow{left:557px;top:0;background:white}
+.spark-small{left:635.5px;top:197px;width:106px;height:106px;background:#111318}
+.spark-left{left:0;top:300px;background:#91deff}
+.claim{left:200px;top:300px;width:420px;background:white;font-size:113px}
+.gift-cards{left:620px;top:300px;width:680px;background:#111318;color:white;font-size:108px}
+.right-arrow{left:1300px;top:300px;background:white}
+svg{display:block;flex-shrink:0}
+
+/* All circles retain equal dimensions. No scaling is applied. */
+.bubble{box-shadow:0 18px 32px rgba(0,56,142,.36),inset 0 3px 5px rgba(255,255,255,.75),inset 0 -3px 9px rgba(83,196,255,.42);isolation:isolate}
+.bubble:after{content:"";position:absolute;inset:0;border-radius:inherit;border:2px solid rgba(201,239,255,.78);pointer-events:none}
+.trade,.gift-cards,.spark-small{background:linear-gradient(145deg,#142c50 0%,#123f85 48%,#086bd8 100%);color:#fff;box-shadow:0 18px 32px rgba(0,56,142,.36),inset 0 3px 5px rgba(173,220,255,.36),inset 0 -3px 9px rgba(83,196,255,.35)}
+.trade:after,.gift-cards:after,.spark-small:after{border-color:rgba(143,209,255,.58)}
+.tokens,.spark-left{background:linear-gradient(145deg,#dfefff 0%,#9fcfff 45%,#388ff7 100%);color:#072c63}
+.claim,.top-arrow,.right-arrow{background:linear-gradient(145deg,#f8fcff 0%,#c1ddff 48%,#69adff 100%);color:#072c63}
+.top-arrow path,.right-arrow path{stroke:#083d80}
+.spark-left path{fill:#083d80}
+</style>
+</head>
+<body>
+<main class="banner" aria-label="Trade tokens. Claim gift cards.">
+ <div class="bubble pill trade">trade</div>
+ <div class="bubble circle top-arrow"><svg width="100" height="100" viewBox="0 0 100 100" aria-hidden="true"><path d="M89 50H12M40 22L12 50L40 78" fill="none" stroke="#111318" stroke-width="9"/></svg></div>
+ <div class="bubble pill tokens">tokens.</div>
+ <div class="bubble circle spark-small"><svg width="58" height="58" viewBox="0 0 58 58" aria-hidden="true"><path d="M29 0C33 18 40 25 58 29C40 33 33 40 29 58C25 40 18 33 0 29C18 25 25 18 29 0Z" fill="white"/></svg></div>
+ <div class="bubble circle spark-left"><svg width="106" height="106" viewBox="0 0 106 106" aria-hidden="true"><path d="M53 0C59 34 72 47 106 53C72 59 59 72 53 106C47 72 34 59 0 53C34 47 47 34 53 0Z" fill="#111318"/></svg></div>
+ <div class="bubble pill claim">claim</div>
+ <div class="bubble pill gift-cards">gift cards.</div>
+ <div class="bubble circle right-arrow"><svg width="100" height="100" viewBox="0 0 100 100" aria-hidden="true"><path d="M8 50H92M61 19L92 50L61 81" fill="none" stroke="#111318" stroke-width="9"/></svg></div>
+</main>
+</body>
+</html>

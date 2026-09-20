@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="500" viewBox="0 0 1500 500">
+  <title>Perks — Frosted glass bubbles</title>
+  <desc>1500 by 500 banner with true circles and capsules with semicircular ends. All lettering and artwork use natural proportions. No scaling transforms. Frosted blue surfaces, icy edge highlights, and soft floating shadows.</desc>
+  <defs>
+    <linearGradient id="blue-background" x1="0" y1="0" x2="1500" y2="500" gradientUnits="userSpaceOnUse"><stop stop-color="#044FF7"/><stop offset="1" stop-color="#17A8FD"/></linearGradient>
+  
+    <linearGradient id="frost" x1="15%" y1="0%" x2="70%" y2="100%"><stop stop-color="#F8FCFF"/><stop offset=".48" stop-color="#C1DDFF"/><stop offset="1" stop-color="#69ADFF"/></linearGradient>
+    <linearGradient id="azure" x1="15%" y1="0%" x2="70%" y2="100%"><stop stop-color="#DFEFFF"/><stop offset=".45" stop-color="#9FCFFF"/><stop offset="1" stop-color="#388FF7"/></linearGradient>
+    <linearGradient id="ink-glass" x1="10%" y1="0%" x2="70%" y2="100%"><stop stop-color="#142C50"/><stop offset=".48" stop-color="#123F85"/><stop offset="1" stop-color="#086BD8"/></linearGradient>
+    <linearGradient id="rim" x1="0%" y1="0%" x2="95%" y2="100%"><stop stop-color="#FFFFFF" stop-opacity=".95"/><stop offset=".4" stop-color="#A5DCFF" stop-opacity=".6"/><stop offset="1" stop-color="#D2FFFF" stop-opacity=".95"/></linearGradient>
+    <linearGradient id="dark-rim" x1="0%" y1="0%" x2="95%" y2="100%"><stop stop-color="#A2D9FF" stop-opacity=".85"/><stop offset=".45" stop-color="#3B8EFF" stop-opacity=".45"/><stop offset="1" stop-color="#9DE9FF" stop-opacity=".9"/></linearGradient>
+    <filter id="float-shadow" x="-35%" y="-60%" width="170%" height="240%" color-interpolation-filters="sRGB"><feDropShadow dx="0" dy="18" stdDeviation="16" flood-color="#00388E" flood-opacity=".36"/></filter>
+    <filter id="letter-glow" x="-20%" y="-30%" width="140%" height="160%" color-interpolation-filters="sRGB"><feDropShadow dx="0" dy="1.5" stdDeviation="1" flood-color="#FFFFFF" flood-opacity=".35"/></filter>
+</defs>
+  <path fill="url(#blue-background)" d="M0 0H1500V500H0Z"/>
+  <g font-family="Arial, Helvetica, sans-serif" font-weight="400" letter-spacing="-4">
+    <g id="Trade-pill" transform="rotate(-24 320 161.01)">
+      <rect x="70" y="61.01" width="500" height="200" rx="100" fill="url(#ink-glass)" stroke="url(#dark-rim)" stroke-width="3" filter="url(#float-shadow)"/>
+      <text x="320" y="198" text-anchor="middle" font-size="118" fill="#FFFFFF">trade</text>
+    </g>
+    <g id="Top-arrow-circle">
+      <circle cx="657" cy="100" r="100" fill="url(#frost)" stroke="url(#rim)" stroke-width="3" filter="url(#float-shadow)"/>
+      <path d="M696 100H619M647 72L619 100L647 128" fill="none" stroke="#083D80" stroke-width="9"/>
+    </g>
+    <g id="Tokens-pill" transform="rotate(15 1026 155.29)">
+      <rect x="751" y="55.29" width="550" height="200" rx="100" fill="url(#azure)" stroke="url(#rim)" stroke-width="3" filter="url(#float-shadow)"/>
+      <text x="1026" y="193" text-anchor="middle" font-size="114" fill="#072C63">tokens.</text>
+    </g>
+    <g id="Small-spark-circle">
+      <circle cx="688.5" cy="250" r="53" fill="url(#ink-glass)" stroke="url(#dark-rim)" stroke-width="3" filter="url(#float-shadow)"/>
+      <path d="M688.5 221C692.5 239 699.5 246 717.5 250C699.5 254 692.5 261 688.5 279C684.5 261 677.5 254 659.5 250C677.5 246 684.5 239 688.5 221Z" fill="#FFFFFF"/>
+    </g>
+    <g id="Left-spark-circle">
+      <circle cx="100" cy="400" r="100" fill="url(#azure)" stroke="url(#rim)" stroke-width="3" filter="url(#float-shadow)"/>
+      <path d="M100 347C106 381 119 394 153 400C119 406 106 419 100 453C94 419 81 406 47 400C81 394 94 381 100 347Z" fill="#083D80"/>
+    </g>
+    <g id="Claim-pill">
+      <rect x="200" y="300" width="420" height="200" rx="100" fill="url(#frost)" stroke="url(#rim)" stroke-width="3" filter="url(#float-shadow)"/>
+      <text x="410" y="438" text-anchor="middle" font-size="113" fill="#072C63">claim</text>
+    </g>
+    <g id="Gift-cards-pill">
+      <rect x="620" y="300" width="680" height="200" rx="100" fill="url(#ink-glass)" stroke="url(#dark-rim)" stroke-width="3" filter="url(#float-shadow)"/>
+      <text x="960" y="432" text-anchor="middle" font-size="108" fill="#FFFFFF">gift cards.</text>
+    </g>
+    <g id="Right-arrow-circle">
+      <circle cx="1400" cy="400" r="100" fill="url(#frost)" stroke="url(#rim)" stroke-width="3" filter="url(#float-shadow)"/>
+      <path d="M1358 400H1442M1411 369L1442 400L1411 431" fill="none" stroke="#083D80" stroke-width="9"/>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="500" viewBox="0 0 1500 500">
+  <title>Perks — More for you</title>
+  <desc>Editable 1500 by 500 banner. Blue gradient, stacked bubbles, and vector recreation of the supplied Perks symbol.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1500" y2="500" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0343F4"/><stop offset=".53" stop-color="#0876FF"/><stop offset="1" stop-color="#18ACF7"/>
+    </linearGradient>
+    <linearGradient id="ice" x1="0" y1="0" x2="0" y2="135" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF"/><stop offset="1" stop-color="#E7F4FF"/>
+    </linearGradient>
+  </defs>
+  <g id="Background"><path fill="url(#background)" d="M0 0H1500V500H0Z"/></g>
+  <g id="Perks-brand" fill="#FFFFFF">
+    <g id="Perks-symbol" transform="translate(94 149) scale(.22)">
+      <path id="Diamond" fill-rule="evenodd" d="M282 284C313 260 338 234 374 240C421 248 605 300 671 320C711 332 729 354 748 398C766 442 786 470 774 503C768 523 751 540 727 556L478 700C441 723 406 708 384 677L245 439C253 419 279 411 300 399C326 384 319 361 304 339C290 318 278 295 282 284ZM469 320L441 373C431 393 439 405 460 411L526 429C556 436 571 428 574 408L577 359C578 342 574 339 552 333L495 317C482 314 475 315 469 320ZM628 356C615 357 612 369 612 385L610 409C610 435 622 446 644 448L685 451C707 452 716 443 711 429L690 382C686 373 680 369 668 365C652 359 637 355 628 356ZM424 486L438 612C440 631 449 632 459 616L522 528C544 499 549 479 527 465L468 448C444 438 419 456 424 486ZM503 616L678 501C700 487 699 486 673 485L632 483C609 482 588 492 574 510C552 538 530 579 503 616Z"/>
+      <path id="Sparkle" d="M174 335C199 321 219 308 232 291C239 282 247 284 251 301C258 327 265 345 279 363C286 373 285 375 273 382C248 394 231 404 218 416C211 424 205 424 202 413C196 386 190 369 178 355C170 346 168 341 174 335Z"/>
+    </g>
+    <text id="Perks-wordmark" x="288" y="291" font-family="Arial, Helvetica, sans-serif" font-size="112" font-weight="700" letter-spacing="-7">perks</text>
+  </g>
+  <g id="Stacked-bubbles">
+    <g id="More-pill" transform="translate(744 161) rotate(-24 146 63)">
+      <rect width="292" height="126" rx="63" fill="#111318"/>
+      <text x="146" y="87" text-anchor="middle" fill="#FFFFFF" font-family="Arial, Helvetica, sans-serif" font-size="81" letter-spacing="-3">more</text>
+    </g>
+    <g id="For-you-pill" transform="translate(1027 197) rotate(14 164 63)">
+      <rect width="328" height="126" rx="63" fill="#8EDCFF"/>
+      <text x="164" y="85" text-anchor="middle" fill="#111318" font-family="Arial, Helvetica, sans-serif" font-size="68" letter-spacing="-3">for you.</text>
+    </g>
+    <g id="Top-arrow-bubble" transform="translate(1111 58)">
+      <circle cx="60" cy="60" r="60" fill="#FFFFFF"/>
+      <path d="M83 60H37M55 42L37 60L55 78" fill="none" stroke="#111318" stroke-width="6" stroke-linecap="square" stroke-linejoin="miter"/>
+    </g>
+    <g id="Bottom-spark-bubble" transform="translate(674 332)">
+      <circle cx="60" cy="60" r="60" fill="#8EDCFF"/>
+      <path d="M60 27C64 47 73 56 93 60C73 64 64 73 60 93C56 73 47 64 27 60C47 56 56 47 60 27Z" fill="#111318"/>
+    </g>
+    <g id="Perks-pill" transform="translate(800 326)">
+      <rect width="400" height="132" rx="66" fill="url(#ice)"/>
+      <text x="200" y="94" text-anchor="middle" fill="#111318" font-family="Arial, Helvetica, sans-serif" font-size="104" font-weight="400" letter-spacing="-5">perks.</text>
+    </g>
+    <g id="Bottom-arrow-bubble" transform="translate(1208 332)">
+      <circle cx="60" cy="60" r="60" fill="#111318"/>
+      <path d="M36 60H83M65 42L83 60L65 78" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="square" stroke-linejoin="miter"/>
+    </g>
+  </g>
+</svg>

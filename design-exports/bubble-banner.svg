@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="500" viewBox="0 0 1500 500" fill="none">
+  <title>Edge-to-edge bubble graphic</title>
+  <desc>1500 by 500. Packed white, black and blue bubbles with text inside the pills. No standalone logo or wordmark. Editable vector artwork.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1500" y2="500" gradientUnits="userSpaceOnUse"><stop stop-color="#0344F6"/><stop offset="1" stop-color="#19AAFF"/></linearGradient>
+    <linearGradient id="blue" x1="0" y1="0" x2="500" y2="230" gradientUnits="userSpaceOnUse"><stop stop-color="#169EFF"/><stop offset="1" stop-color="#064DF5"/></linearGradient>
+    <linearGradient id="pale" x1="0" y1="0" x2="500" y2="240" gradientUnits="userSpaceOnUse"><stop stop-color="#BCEAFF"/><stop offset="1" stop-color="#72CCFF"/></linearGradient>
+    <clipPath id="frame"><path d="M0 0H1500V500H0Z"/></clipPath>
+  </defs>
+  <g clip-path="url(#frame)">
+    <path id="Blue-gradient-background" d="M0 0H1500V500H0Z" fill="url(#background)"/>
+    <g id="Upper-left-white-pill" transform="translate(-132 -66) rotate(-18 300 124)">
+      <rect width="600" height="248" rx="124" fill="#F7FBFF"/>
+      <path d="M248 124H388M339 75L388 124L339 173" stroke="#101216" stroke-width="17"/>
+    </g>
+    <g id="Upper-middle-ice-pill" transform="translate(454 -70) rotate(16 245 119)">
+      <rect width="490" height="238" rx="119" fill="url(#pale)"/>
+    </g>
+    <g id="Upper-right-black-pill" transform="translate(938 -104) rotate(-13 300 128)">
+      <rect width="600" height="256" rx="128" fill="#101216"/>
+      <path d="M239 128H369M323 82L369 128L323 174" stroke="#FFFFFF" stroke-width="17"/>
+    </g>
+    <g id="Left-blue-bubble" transform="translate(-153 159)">
+      <rect width="407" height="369" rx="184.5" fill="url(#pale)"/>
+      <path d="M165 180H279M221 123L279 180L221 237" stroke="#101216" stroke-width="16"/>
+    </g>
+    <g id="Middle-black-pill" transform="translate(211 134) rotate(-22 289 120)">
+      <rect width="578" height="240" rx="120" fill="#101216"/>
+      <text x="289" y="157" text-anchor="middle" fill="#F7FBFF" font-family="Arial, Helvetica, sans-serif" font-size="133" letter-spacing="-5">more</text>
+    </g>
+    <g id="Middle-white-pill" transform="translate(760 139) rotate(16 272 113)">
+      <rect width="544" height="226" rx="113" fill="#FFFFFF"/>
+      <text x="272" y="140" text-anchor="middle" fill="#101216" font-family="Arial, Helvetica, sans-serif" font-size="98" letter-spacing="-5">for you.</text>
+    </g>
+    <g id="Right-blue-bubble" transform="translate(1241 107)">
+      <rect width="373" height="370" rx="185" fill="url(#pale)"/>
+      <circle cx="183" cy="183" r="67" stroke="#075BFA" stroke-width="17"/>
+      <circle cx="183" cy="183" r="28" fill="#075BFA"/>
+    </g>
+    <g id="Lower-left-white-pill" transform="translate(195 360) rotate(8 295 124)">
+      <rect width="590" height="248" rx="124" fill="#F7FBFF"/>
+      <text x="295" y="112" text-anchor="middle" fill="#101216" font-family="Arial, Helvetica, sans-serif" font-size="100" letter-spacing="-4">perks.</text>
+    </g>
+    <g id="Lower-middle-blue-pill" transform="translate(747 357) rotate(-18 253 125)">
+      <rect width="506" height="250" rx="125" fill="url(#blue)"/>
+      <path d="M184 125H314M267 78L314 125L267 172" stroke="#FFFFFF" stroke-width="17"/>
+    </g>
+    <g id="Lower-right-black-pill" transform="translate(1211 415) rotate(15 239 110)">
+      <rect width="478" height="220" rx="110" fill="#101216"/>
+    </g>
+  </g>
+</svg>

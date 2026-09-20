@@ -1,0 +1,9 @@
+export type TokenView = {mint:string;name:string;symbol:string;description:string;imageUrl?:string;glyph:string;color:string;progress:number;volume:number|null;pot:number|null;change:number|null;createdAt:string;holders:number|null;marketCap:number|null;graduated:boolean};
+export const demoTokens: TokenView[] = [
+  {mint:'demo-lunch',name:'Lunch Money',symbol:'LUNCH',description:'The only green candle you can eat.',glyph:'🍔',color:'#d4f86b',progress:78.4,volume:48216,pot:1248.50,change:24.8,createdAt:'2026-09-15T12:00:00Z',holders:842,marketCap:48200,graduated:false},
+  {mint:'demo-caffeine',name:'Caffeine Coin',symbol:'CAFF',description:'Proof of coffee. Powered by the people.',glyph:'☕',color:'#c7b0f7',progress:62.1,volume:32840,pot:864.20,change:18.6,createdAt:'2026-09-17T12:00:00Z',holders:613,marketCap:36400,graduated:false},
+  {mint:'demo-touch',name:'Touch Grass',symbol:'GRASS',description:'Go outside. Your bags are working.',glyph:'🌱',color:'#80bfa4',progress:100,volume:71492,pot:2186.75,change:42.1,createdAt:'2026-09-12T12:00:00Z',holders:1820,marketCap:112000,graduated:true},
+  {mint:'demo-cat',name:'Cat Distribution',symbol:'CDS',description:'You don’t choose the cat. It chooses you.',glyph:'🐈',color:'#ecb886',progress:43.2,volume:18740,pot:412.80,change:12.3,createdAt:'2026-09-18T12:00:00Z',holders:329,marketCap:24100,graduated:false},
+  {mint:'demo-noodle',name:'Noodle Hands',symbol:'NOODLE',description:'Hold tight. Dinner is on the curve.',glyph:'🍜',color:'#ecc9cc',progress:34.8,volume:12965,pot:286.50,change:8.7,createdAt:'2026-09-19T12:00:00Z',holders:218,marketCap:18400,graduated:false},
+  {mint:'demo-player',name:'Player One',symbol:'P1',description:'Your next game is already in the bag.',glyph:'👾',color:'#abc9ed',progress:56.3,volume:24780,pot:623.40,change:16.2,createdAt:'2026-09-16T12:00:00Z',holders:507,marketCap:31900,graduated:false}
+];

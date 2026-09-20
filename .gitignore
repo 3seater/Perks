@@ -1,0 +1,15 @@
+node_modules/
+.pnpm-store/
+.next/
+.env
+.env.local
+.env.*
+!.env.example
+*.tsbuildinfo
+coverage/
+test-results/
+.secrets/
+
+# Generated standalone banner preview and its separate repository.
+design-exports/banner-page/
+design-exports/banner-page.tar.gz

@@ -1,0 +1,91 @@
+'use client';
+import { useEffect, useState } from 'react';
+import { useWallet } from '@solana/wallet-adapter-react';
+import bs58 from 'bs58';
+import { WalletMultiButton } from './wallet-button';
+import { Transaction } from '@solana/web3.js';
+import { Turnstile } from '@marsidev/react-turnstile';
+import { ArrowUpRight, Upload, LoaderCircle, CheckCircle2 } from 'lucide-react';
+import { Dialog } from './ui/dialog';
+import { api } from '@/lib/client';
+
+function LaunchImageField() {
+  const [file,setFile]=useState<File|null>(null);
+  const [preview,setPreview]=useState('');
+  useEffect(()=>{
+    if(!file){setPreview('');return;}
+    const url=URL.createObjectURL(file);
+    setPreview(url);
+    return ()=>URL.revokeObjectURL(url);
+  },[file]);
+  return <label className="upload-field">
+    <span className="launch-image-preview" aria-hidden={!preview}>
+      {preview&&<img src={preview} alt="Selected coin artwork"/>}
+    </span>
+    <span className="launch-image-copy">
+      <Upload size={22} aria-hidden="true"/>
+      <b>{file?'Change coin image':'Give your coin a face'}</b>
+      <span aria-live="polite">{file?.name??'PNG, JPEG or WebP · up to 4 MB'}</span>
+    </span>
+    <input type="file" name="image" aria-label="Coin image" accept="image/png,image/jpeg,image/webp" required onChange={event=>setFile(event.target.files?.[0]??null)}/>
+  </label>;
+}
+
+export function LaunchModal({open,onOpenChange,demo}:{open:boolean;onOpenChange:(value:boolean)=>void;demo:boolean}) {
+  const {publicKey,signMessage,signTransaction}=useWallet();
+  const [status,setStatus]=useState<{enabled:boolean;pilot:boolean;rewardBps:number|null;reason:string}|null>(null);
+  const [prepared,setPrepared]=useState<{mint:string;transaction:string;initialBuyLamports:string;maximumBuyLamports:string;tokenAmount:string;estimatedDebitLamports:string|null;creatorRecipient:string}|null>(null);
+  const [token,setToken]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState(''),[success,setSuccess]=useState('');
+  const [pending,setPending]=useState<{mint:string;signature?:string;transaction?:string}|null>(null);
+  const address=publicKey?.toBase58(),storageKey=address?`perks-launch:${address}`:null;
+  useEffect(()=>{setPrepared(null);setPending(null);setSuccess('');if(storageKey){try{const raw=sessionStorage.getItem(storageKey);if(raw)setPending(JSON.parse(raw));}catch{}}},[storageKey]);
+  useEffect(()=>{if(open&&!demo)void api<typeof status>('/api/launch/status').then(setStatus).catch(()=>setStatus(null));},[open,demo]);
+  function remember(value:typeof pending){setPending(value);if(storageKey){if(value)sessionStorage.setItem(storageKey,JSON.stringify(value));else sessionStorage.removeItem(storageKey);}}
+  async function confirm() {
+    setBusy(true);setError('');
+    try{
+      let next=pending;
+      if(!next){
+        if(!prepared||!signTransaction)throw new Error('Connect a wallet that supports signing transactions.');
+        const tx=Transaction.from(Uint8Array.from(atob(prepared.transaction),c=>c.charCodeAt(0)));
+        if(tx.feePayer?.toBase58()!==address)throw new Error('Reconnect the wallet that prepared this launch.');
+        const signed=await signTransaction(tx);
+        next={mint:prepared.mint,transaction:btoa(String.fromCharCode(...signed.serialize()))};remember(next);
+      }
+      if(!next.signature){const sent=await api<{signature:string}>('/api/launch/submit',{mint:next.mint,transaction:next.transaction});next={mint:next.mint,signature:sent.signature};remember(next);}
+      for(let attempt=0;attempt<24;attempt++){
+        try{await api('/api/launch/confirm',{mint:next.mint,signature:next.signature});setSuccess(next.mint);remember(null);setPrepared(null);window.dispatchEvent(new Event('perks:launched'));return;}
+        catch{if(attempt===23)throw new Error('Your launch was submitted. Recheck its finalization before starting another token.');await new Promise(resolve=>setTimeout(resolve,2500));}
+      }
+    }catch(e){setError((e as Error).message);}finally{setBusy(false);}
+  }
+  async function submit(event:React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();setBusy(true);setError('');
+    try {
+      if(demo){setSuccess('demo');return;}
+      if(!publicKey||!signMessage)throw new Error('Connect a wallet that supports signing messages.');
+      const form=new FormData(event.currentTarget),image=form.get('image');
+      if(!(image instanceof File))throw new Error('Choose an image.');
+      const imageHash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',await image.arrayBuffer())),b=>b.toString(16).padStart(2,'0')).join('');
+      const challenge=await api<{challengeId:string;message:string}>('/api/launch/challenge',{wallet:publicKey.toBase58(),name:String(form.get('name')).trim(),symbol:String(form.get('symbol')),description:String(form.get('description')).trim(),initialBuySol:String(form.get('initialBuySol')||'0'),imageHash});
+      const signature=bs58.encode(await signMessage(new TextEncoder().encode(challenge.message)));
+      form.set('wallet',publicKey.toBase58());form.set('turnstileToken',token);form.set('challengeId',challenge.challengeId);form.set('signature',signature);
+      setPrepared(await api<NonNullable<typeof prepared>>('/api/launch',form));
+    }catch(e){setError(e instanceof Error?e.message:'Launch failed.');}finally{setBusy(false);}
+  }
+  if(prepared||pending)return <Dialog className="launch-modal" open={open} onOpenChange={value=>{if(!busy)onOpenChange(value);}} title={pending?'Confirming your launch':'Review your launch'} description="Solana mainnet · your wallet approves the transaction.">
+    <div className="launch-form">{pending?<p>A signed launch is awaiting confirmation. Rechecking will not create another token.</p>:prepared&&<><div className="launch-info"><span>INITIAL BUY <b>{Number(prepared.initialBuyLamports)/1e9} SOL</b></span><span>TOKENS RECEIVED <b>{(Number(prepared.tokenAmount)/1e6).toLocaleString('en-US',{maximumFractionDigits:6})}</b></span><span>ESTIMATED WALLET DEBIT <b>{prepared.estimatedDebitLamports===null?'Unavailable':`${Number(prepared.estimatedDebitLamports)/1e9} SOL`}</b></span></div><p className="secure-note">The estimate includes your buy, account creation and network fees. Your wallet shows the final transaction.</p><p className="secure-note" style={{overflowWrap:'anywhere'}}>Creator-fee treasury: {prepared.creatorRecipient}</p></>}
+    {!pending&&prepared&&Number(prepared.initialBuyLamports)>0&&<p className="secure-note">Initial-buy limit: {Number(prepared.maximumBuyLamports)/1e9} SOL, including 1% slippage tolerance. Network fees and account rent are separate.</p>}{pending?.signature&&<a href={`https://solscan.io/tx/${pending.signature}`} target="_blank" rel="noreferrer">View transaction</a>}<button className="button primary full" onClick={confirm} disabled={busy}>{busy?<LoaderCircle className="spin" size={18}/>:<ArrowUpRight size={18}/>} {busy?'Checking your launch…':pending?'Recheck submitted launch':'Approve launch in wallet'}</button>{!pending&&<button className="text-button" disabled={busy} onClick={()=>setPrepared(null)}>Back to details</button>}{error&&<p role="alert" className="error-message">{error}</p>}</div>
+  </Dialog>;
+  return <Dialog className="launch-modal" open={open} onOpenChange={value=>{if(!busy)onOpenChange(value);}} title="A meme with benefits." description={demo?'Try the launch form. No token will be created.':'Launch on a Pump.fun curve. Creator fees fund trading rewards.'}>
+    {success?<div className="launch-success"><CheckCircle2 size={48}/><h3>{success==='demo'?'Looking good. Ready for liftoff.':'Your coin is on-chain.'}</h3><p>{success==='demo'?'This is a demo. Live launches require configured protocol services.':'The indexer will add your token to Explore Curves once synchronized.'}</p>{success!=='demo'&&<a className="button primary" href={`https://pump.fun/coin/${success}`} target="_blank" rel="noreferrer">View coin <ArrowUpRight size={18}/></a>}<button className="text-button" onClick={()=>setSuccess('')}>Create another coin</button></div>:<form onSubmit={submit} className="launch-form">
+    <div className="form-row"><label>Token name<input name="name" placeholder="Lunch Money" maxLength={32} required/></label><label>Ticker<input name="symbol" placeholder="LUNCH" pattern="[A-Za-z0-9]{1,10}" maxLength={10} required/></label></div><label>The story<textarea name="description" placeholder="Every great meme starts somewhere…" maxLength={500} required rows={3}/></label>
+    <LaunchImageField/>
+    <label>Initial buy in SOL (optional)<input name="initialBuySol" inputMode="decimal" pattern="[0-9]{1,3}(\.[0-9]{1,9})?" defaultValue="0" required/></label>
+    <div className="launch-info"><span>NETWORK <b>Solana mainnet</b></span><span>CREATOR FEES <b>Perks treasury → trader rewards</b></span>{status?.rewardBps!==null&&status?.rewardBps!==undefined&&<span>TRADER SHARE <b>{status.rewardBps/100}% of the creator fee</b></span>}</div>
+    {!demo&&!status?.pilot&&process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY&&<Turnstile siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY} options={{action:'launch',theme:'dark'}} onSuccess={setToken} onExpire={()=>setToken('')}/>}
+    {!demo&&!publicKey?<WalletMultiButton/>:<button className="button primary full" disabled={busy||(!demo&&(!status?.enabled||(!status.pilot&&!token)))}>{busy?<LoaderCircle className="spin" size={18}/>:<ArrowUpRight size={18}/>} {busy?'Preparing your launch…':demo?'Preview launch':'Review launch'}</button>}
+    <p className="secure-note">{demo?'Demo mode · no transaction or network fee':status?.enabled?'Your wallet pays network and creation costs. No added Perks launch fee.':status?.reason||'Checking launch readiness…'}</p>{error&&<p role="alert" className="error-message">{error}</p>}
+    </form>}
+  </Dialog>;
+}
