@@ -35,7 +35,7 @@ export function ClaimModal({open,onOpenChange,demo}:{open:boolean;onOpenChange:(
       {browsing&&<button className="text-button reward-back" onClick={()=>setBrowsing(false)}>← Rewards overview</button>}
       <div className="holo-card reward-balance-card">
         <div className="card-top"><PerksCardBrand/><CreditCard size={23}/></div>
-        <span className="eyebrow">{demo?'YOUR DEMO BALANCE':'YOUR ELIGIBLE REWARDS'}</span>
+        <span className="eyebrow">{demo?'Your demo balance':'Your eligible rewards'}</span>
         <div className="balance-amounts"><strong className="card-balance" aria-live="polite" aria-busy={loading}>{loading?<span role="status" aria-label="Updating your rewards"><LoaderCircle className="spin" size={32} aria-hidden="true"/></span>:cents==null?balance?`${formatRewardSol(balance.eligibleLamports)} SOL`:'—':`${demo?'':'≈ '}$${(cents/100).toFixed(2)}`}</strong>{demo?<SolEquivalent amount={32.75}/>:balance&&cents!=null&&<small className="sol-equivalent">{formatRewardSol(balance.eligibleLamports)} SOL</small>}</div>
       </div>
       {!demo&&!wallet&&!browsing&&<div className="reward-connect"><span>Connect to see your rewards.</span><WalletMultiButton/></div>}

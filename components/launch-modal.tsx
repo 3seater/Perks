@@ -5,7 +5,7 @@ import bs58 from 'bs58';
 import { WalletMultiButton } from './wallet-button';
 import { Transaction } from '@solana/web3.js';
 import { Turnstile } from '@marsidev/react-turnstile';
-import { ArrowUpRight, Upload, LoaderCircle, CheckCircle2 } from 'lucide-react';
+import { ArrowUpRight, ImagePlus, LoaderCircle, CheckCircle2 } from 'lucide-react';
 import { Dialog } from './ui/dialog';
 import { api } from '@/lib/client';
 
@@ -20,11 +20,11 @@ function LaunchImageField() {
   },[file]);
   return <label className="upload-field">
     <span className="launch-image-preview" aria-hidden={!preview}>
-      {preview&&<img src={preview} alt="Selected coin artwork"/>}
+      {preview?<img src={preview} alt="Selected coin artwork"/>:<ImagePlus size={26} strokeWidth={1.5} aria-hidden="true"/>}
     </span>
     <span className="launch-image-copy">
-      <Upload size={22} aria-hidden="true"/>
-      <b>{file?'Change coin image':'Give your coin a face'}</b>
+      <b>Click anywhere here to choose a file, or drop an image in.</b>
+      <span className="launch-file-button">{file?'Change file':'Choose file'}</span>
       <span aria-live="polite">{file?.name??'PNG, JPEG or WebP · up to 4 MB'}</span>
     </span>
     <input type="file" name="image" aria-label="Coin image" accept="image/png,image/jpeg,image/webp" required onChange={event=>setFile(event.target.files?.[0]??null)}/>
@@ -74,18 +74,18 @@ export function LaunchModal({open,onOpenChange,demo}:{open:boolean;onOpenChange:
     }catch(e){setError(e instanceof Error?e.message:'Launch failed.');}finally{setBusy(false);}
   }
   if(prepared||pending)return <Dialog className="launch-modal" open={open} onOpenChange={value=>{if(!busy)onOpenChange(value);}} title={pending?'Confirming your launch':'Review your launch'} description="Solana mainnet · your wallet approves the transaction.">
-    <div className="launch-form">{pending?<p>A signed launch is awaiting confirmation. Rechecking will not create another token.</p>:prepared&&<><div className="launch-info"><span>INITIAL BUY <b>{Number(prepared.initialBuyLamports)/1e9} SOL</b></span><span>TOKENS RECEIVED <b>{(Number(prepared.tokenAmount)/1e6).toLocaleString('en-US',{maximumFractionDigits:6})}</b></span><span>ESTIMATED WALLET DEBIT <b>{prepared.estimatedDebitLamports===null?'Unavailable':`${Number(prepared.estimatedDebitLamports)/1e9} SOL`}</b></span></div><p className="secure-note">The estimate includes your buy, account creation and network fees. Your wallet shows the final transaction.</p><p className="secure-note" style={{overflowWrap:'anywhere'}}>Creator-fee treasury: {prepared.creatorRecipient}</p></>}
+    <div className="launch-form">{pending?<p>A signed launch is awaiting confirmation. Rechecking will not create another token.</p>:prepared&&<><div className="launch-info"><span>Initial buy <b>{Number(prepared.initialBuyLamports)/1e9} SOL</b></span><span>Tokens received <b>{(Number(prepared.tokenAmount)/1e6).toLocaleString('en-US',{maximumFractionDigits:6})}</b></span><span>Estimated wallet debit <b>{prepared.estimatedDebitLamports===null?'Unavailable':`${Number(prepared.estimatedDebitLamports)/1e9} SOL`}</b></span></div><p className="secure-note">The estimate includes your buy, account creation and network fees. Your wallet shows the final transaction.</p><p className="secure-note" style={{overflowWrap:'anywhere'}}>Creator-fee treasury: {prepared.creatorRecipient}</p></>}
     {!pending&&prepared&&Number(prepared.initialBuyLamports)>0&&<p className="secure-note">Initial-buy limit: {Number(prepared.maximumBuyLamports)/1e9} SOL, including 1% slippage tolerance. Network fees and account rent are separate.</p>}{pending?.signature&&<a href={`https://solscan.io/tx/${pending.signature}`} target="_blank" rel="noreferrer">View transaction</a>}<button className="button primary full" onClick={confirm} disabled={busy}>{busy?<LoaderCircle className="spin" size={18}/>:<ArrowUpRight size={18}/>} {busy?'Checking your launch…':pending?'Recheck submitted launch':'Approve launch in wallet'}</button>{!pending&&<button className="text-button" disabled={busy} onClick={()=>setPrepared(null)}>Back to details</button>}{error&&<p role="alert" className="error-message">{error}</p>}</div>
   </Dialog>;
-  return <Dialog className="launch-modal" open={open} onOpenChange={value=>{if(!busy)onOpenChange(value);}} title="A meme with benefits." description={demo?'Try the launch form. No token will be created.':'Launch on a Pump.fun curve. Creator fees fund trading rewards.'}>
+  return <Dialog className="launch-modal" open={open} onOpenChange={value=>{if(!busy)onOpenChange(value);}} title="Create token" description={demo?'Try the launch form. No token will be created.':'Launch on a Pump.fun curve. Creator fees fund trading rewards.'}>
     {success?<div className="launch-success"><CheckCircle2 size={48}/><h3>{success==='demo'?'Looking good. Ready for liftoff.':'Your coin is on-chain.'}</h3><p>{success==='demo'?'This is a demo. Live launches require configured protocol services.':'The indexer will add your token to Explore Curves once synchronized.'}</p>{success!=='demo'&&<a className="button primary" href={`https://pump.fun/coin/${success}`} target="_blank" rel="noreferrer">View coin <ArrowUpRight size={18}/></a>}<button className="text-button" onClick={()=>setSuccess('')}>Create another coin</button></div>:<form onSubmit={submit} className="launch-form">
-    <div className="form-row"><label>Token name<input name="name" placeholder="Lunch Money" maxLength={32} required/></label><label>Ticker<input name="symbol" placeholder="LUNCH" pattern="[A-Za-z0-9]{1,10}" maxLength={10} required/></label></div><label>The story<textarea name="description" placeholder="Every great meme starts somewhere…" maxLength={500} required rows={3}/></label>
+    <div className="form-row"><label>Token name<input name="name" placeholder="Perks" maxLength={32} required/></label><label>Ticker<input name="symbol" placeholder="PERKS" pattern="[A-Za-z0-9]{1,10}" maxLength={10} required/></label></div><label>The story<textarea name="description" placeholder="A short description of the token" maxLength={500} required rows={3}/></label>
     <LaunchImageField/>
     <label>Initial buy in SOL (optional)<input name="initialBuySol" inputMode="decimal" pattern="[0-9]{1,3}(\.[0-9]{1,9})?" defaultValue="0" required/></label>
-    <div className="launch-info"><span>NETWORK <b>Solana mainnet</b></span><span>CREATOR FEES <b>Perks treasury → trader rewards</b></span>{status?.rewardBps!==null&&status?.rewardBps!==undefined&&<span>TRADER SHARE <b>{status.rewardBps/100}% of the creator fee</b></span>}</div>
+    <div className="launch-info"><span>Network <b>Solana mainnet</b></span><span>Creator fees <b>Perks treasury → trader rewards</b></span>{status?.rewardBps!==null&&status?.rewardBps!==undefined&&<span>Trader share <b>{status.rewardBps/100}% of the creator fee</b></span>}</div>
     {!demo&&!status?.pilot&&process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY&&<Turnstile siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY} options={{action:'launch',theme:'dark'}} onSuccess={setToken} onExpire={()=>setToken('')}/>}
     {!demo&&!publicKey?<WalletMultiButton/>:<button className="button primary full" disabled={busy||(!demo&&(!status?.enabled||(!status.pilot&&!token)))}>{busy?<LoaderCircle className="spin" size={18}/>:<ArrowUpRight size={18}/>} {busy?'Preparing your launch…':demo?'Preview launch':'Review launch'}</button>}
-    <p className="secure-note">{demo?'Demo mode · no transaction or network fee':status?.enabled?'Your wallet pays network and creation costs. No added Perks launch fee.':status?.reason||'Checking launch readiness…'}</p>{error&&<p role="alert" className="error-message">{error}</p>}
+    {(demo||status?.enabled||status?.reason!=='The live indexer is catching up. Try again shortly.')&&<p className="secure-note">{demo?'Demo mode · no transaction or network fee':status?.enabled?'Your wallet pays network and creation costs. No added Perks launch fee.':status?.reason||'Checking launch readiness…'}</p>}{error&&<p role="alert" className="error-message">{error}</p>}
     </form>}
   </Dialog>;
 }

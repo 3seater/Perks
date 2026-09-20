@@ -22,5 +22,5 @@ export const GET = route(async request => {
     eligibleCents:price===null?null:centsForLamports(balance.totals.pending+balance.totals.available,price),
     indexedAt:cursor?.updatedAt.toISOString()??null,syncing:!cursor||Date.now()-cursor.updatedAt.getTime()>60000,
     usdIsEstimate:true,rewardBps:Number(process.env.REWARD_BPS),serviceFeeCents:0,claimsEnabled:(await cardReadiness()).enabled,
-    tokens:balance.tokens.map(t=>({tokenMint:t.tokenMint,name:names.get(t.tokenMint)?.name??t.tokenMint,symbol:names.get(t.tokenMint)?.symbol??'',...serialize(t)}))});
+    tokens:balance.tokens.map(t=>({tokenMint:t.tokenMint,name:names.get(t.tokenMint)?.name??t.tokenMint,symbol:names.get(t.tokenMint)?.symbol??'',imageUrl:names.get(t.tokenMint)?.imageUrl??'',...serialize(t)}))});
 });

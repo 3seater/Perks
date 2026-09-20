@@ -60,7 +60,7 @@ export function CardCatalog({embedded=false}:{embedded?:boolean}) {
       {product&&<>{showTerms?<div className="card-terms-screen"><h3>{brand.name} conditions</h3><div className="card-terms-box" tabIndex={0}>{product.terms}</div><button className="button secondary full" onClick={()=>setShowTerms(false)}>Back to amount</button></div>:<>
         <div className="selected-perk">{brand.logo&&<img src={brand.logo} alt=""/>}<div><strong>{brand.name}</strong><span>{product.country} · {product.currency} · Digital gift card</span></div></div>
         {step==='amount'&&<>
-        {products.length>1&&<><span className="field-label">CHOOSE YOUR AMOUNT</span>
+        {products.length>1&&<><span className="field-label">Choose your amount</span>
         <SortMenu label="Card amount" className="catalog-menu catalog-denominations" showIcon={false} value={productId}
           options={products.map(p=>({value:p.id,label:p.fixed?`${money(p.fixed,p.currency)}`:`${p.min}–${p.max} ${p.currency} · choose an amount`}))}
           onChange={value=>{const p=products.find(p=>p.id===value)!;setProductId(p.id);setAmount(p.fixed??p.min??'');}}/>
