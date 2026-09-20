@@ -6,6 +6,7 @@ import {formatRewardSol as sol} from '@/lib/format-rewards';
 import {TokenImage} from './token-image';
 import {ClaimModal} from './claim-modal';
 import {explorerAddress,shortAddress} from './wallet-menu';
+import { Skeleton } from './ui/skeleton';
 type Amounts={eligibleLamports:string;availableLamports:string;pendingLamports:string;reservedLamports:string;spentLamports:string};
 type Balance=Amounts&{syncing:boolean;rewardBps:number;tokens:(Amounts&{tokenMint:string;name:string;symbol:string;imageUrl?:string})[]};
 export function WalletRewards({wallet}:{wallet:string}){
@@ -14,7 +15,7 @@ export function WalletRewards({wallet}:{wallet:string}){
     async function refresh(){try{const result=await api<Balance>(`/api/rewards?wallet=${wallet}`);if(active){setBalance(result);setError('');}}catch{if(active)setError('Rewards could not be refreshed. Please try Refresh again.');}finally{if(active)timer=setTimeout(refresh,15000);}}
     void refresh();return()=>{active=false;clearTimeout(timer);};
   },[wallet]);
-  if(!balance)return <section className="profile-list" aria-label="Trading rewards"><p className="profile-empty" role="status">{error||'Loading trading rewards…'}</p></section>;
+  if(!balance)return error?<section className="profile-list" aria-label="Trading rewards"><p className="profile-empty" role="alert">{error}</p></section>:<section className="wallet-rewards wallet-rewards-skeleton" aria-label="Loading trading rewards" aria-busy="true"><div className="rewards-overview"><div className="rewards-overview-heading"><Skeleton className="skeleton-rewards-heading"/><Skeleton className="skeleton-rewards-action"/></div><div className="rewards-balances">{Array.from({length:3},(_,index)=><div key={index}><Skeleton className="skeleton-rewards-label"/><Skeleton className="skeleton-rewards-value"/><Skeleton className="skeleton-rewards-copy"/></div>)}</div></div><div className="rewards-breakdown"><div className="rewards-section-heading"><Skeleton className="skeleton-rewards-section"/></div>{Array.from({length:3},(_,index)=><div className="rewards-token-row" key={index}><Skeleton className="skeleton-rewards-token"/><Skeleton className="skeleton-rewards-amount"/><Skeleton className="skeleton-rewards-amount"/></div>)}</div></section>;
   return <section className="wallet-rewards" aria-label="Trading rewards">
     <div className="rewards-overview">
       <div className="rewards-overview-heading"><div><h2>Your trading rewards</h2></div><button className="button primary" onClick={()=>setClaim(true)}><Gift size={16}/>Browse gift cards<ArrowUpRight size={16}/></button></div>

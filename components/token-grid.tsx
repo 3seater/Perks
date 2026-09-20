@@ -46,7 +46,7 @@ export function TokenGrid({ tokens, onSelect }: { tokens: TokenView[]; onSelect:
         <strong>{token.marketCap === null ? '—' : marketCap(token.marketCap)}</strong><span>MC</span>
       </div>
       <div className="token-progress-row"><div className="progress-track" role="progressbar" aria-label="Bonding curve progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}><span style={{ width: `${progress}%` }}/></div><span>{Number(progress.toFixed(2))}%</span></div>
-      <div className="token-meta"><span className="token-ca" title={`Contract address: ${token.mint}`}>CA {address}</span><time dateTime={token.createdAt} title={`Launched ${token.createdAt}`}>{launchAge(token.createdAt, now)}</time></div>
+      <div className="token-meta"><span className="token-ca" title={`Contract address: ${token.mint}`}>{address}</span><time dateTime={token.createdAt} title={`Launched ${token.createdAt}`}>{launchAge(token.createdAt, now)}</time></div>
     </button>;
   })}</div>;
 }

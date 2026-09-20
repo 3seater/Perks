@@ -14,11 +14,11 @@
   --glass-ice: linear-gradient(145deg, #f8fcff, #c1ddff 48%, #69adff);
 }
 
-html { scrollbar-gutter: stable; }
-/* The reserved gutter already accounts for the scrollbar. Radix's additional
-   body margin would otherwise shrink and shift the entire page by 15px. */
+html, body { scrollbar-gutter: stable; }
+/* The reserved gutter already accounts for the scrollbar. Avoid a second
+   right-margin adjustment when Radix locks the page behind a modal. */
 @supports (scrollbar-gutter: stable) {
-  body[data-scroll-locked] { margin-right:0!important; --removed-body-scroll-bar-size:0px; }
+  html body[data-scroll-locked] { margin-right:0!important; padding-right:0!important; --removed-body-scroll-bar-size:0px!important; }
 }
 body {
   background: radial-gradient(ellipse 75% 650px at 85% 15%, #085ae324, transparent 80%),
