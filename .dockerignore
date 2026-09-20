@@ -1,9 +1,12 @@
 node_modules
 .next
 .git
+.secrets
 .env
 .env.*
 !.env.example
 .pnpm-store
 *.tsbuildinfo
 test-results
+deploy/secrets
+deploy/backups

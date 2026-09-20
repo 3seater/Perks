@@ -9,6 +9,8 @@ node_modules/
 coverage/
 test-results/
 .secrets/
+deploy/secrets/
+deploy/backups/
 
 # Generated standalone banner preview and its separate repository.
 design-exports/banner-page/

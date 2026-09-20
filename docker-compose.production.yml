@@ -1,0 +1,136 @@
+name: perks-production
+
+x-app: &app
+  image: perks-app:${PERKS_IMAGE_TAG:-local}
+  build:
+    context: .
+    args:
+      NEXT_PUBLIC_DEMO_MODE: "false"
+      NEXT_PUBLIC_SOLANA_NETWORK: mainnet-beta
+      NEXT_PUBLIC_SOLANA_RPC_URL: ${NEXT_PUBLIC_SOLANA_RPC_URL:?Set the browser RPC URL}
+      NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${NEXT_PUBLIC_TURNSTILE_SITE_KEY:-}
+  env_file: .env.production
+  environment:
+    NODE_ENV: production
+    DATABASE_URL: postgresql://perks:${POSTGRES_PASSWORD:?Set a hex database password}@postgres:5432/perks?connect_timeout=5
+    REDIS_URL: redis://redis:6379
+    APP_ORIGIN: https://${PERKS_DOMAIN:?Set the public domain}
+    TURNSTILE_HOSTNAME: ${PERKS_DOMAIN}
+    TRUSTED_CLIENT_IP_HEADER: x-real-ip
+  init: true
+  restart: unless-stopped
+  logging:
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: "3"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: perks
+      POSTGRES_DB: perks
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U perks -d perks"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+  redis:
+    image: redis:7-alpine
+    command: [redis-server, --appendonly, "yes", --maxmemory-policy, noeviction]
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+  migrate:
+    <<: *app
+    restart: "no"
+    command: [node, node_modules/prisma/build/index.js, migrate, deploy]
+    depends_on:
+      postgres:
+        condition: service_healthy
+  web:
+    <<: *app
+    command: [node, node_modules/next/dist/bin/next, start, --hostname, 0.0.0.0]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:3000/api/health',{signal:AbortSignal.timeout(8000)}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      start_period: 45s
+      retries: 3
+  indexer:
+    <<: *app
+    command: [node, --import, tsx, workers/indexer.ts]
+    stop_grace_period: 2m
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: [CMD, node, deploy/worker-health.cjs, indexer]
+      interval: 30s
+      timeout: 10s
+      start_period: 2m
+      retries: 3
+  cards:
+    <<: *app
+    profiles: [cards]
+    command: [node, --import, tsx, workers/card-payments.ts]
+    stop_grace_period: 3m
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://perks:${POSTGRES_PASSWORD}@postgres:5432/perks?connect_timeout=5
+      REDIS_URL: redis://redis:6379
+      CARD_PAYMENT_KEYPAIR_PATH: /run/secrets/card_payment_wallet
+    secrets:
+      - card_payment_wallet
+    volumes:
+      - ./deploy/secrets/card-worker.json:/app/.secrets/card-worker.json:ro
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: [CMD, node, deploy/worker-health.cjs, cards]
+      interval: 30s
+      timeout: 10s
+      start_period: 45s
+      retries: 3
+  proxy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      PERKS_DOMAIN: ${PERKS_DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      web:
+        condition: service_healthy
+
+secrets:
+  card_payment_wallet:
+    file: ./deploy/secrets/card-payment-wallet.json
+
+volumes:
+  postgres_data:
+  redis_data:
+  caddy_data:
+  caddy_config:

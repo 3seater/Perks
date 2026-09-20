@@ -1,0 +1,53 @@
+name: perks-workers
+
+x-worker: &worker
+  image: perks-app:workers
+  build:
+    context: .
+    args:
+      NEXT_PUBLIC_DEMO_MODE: "false"
+      NEXT_PUBLIC_SOLANA_NETWORK: mainnet-beta
+      NEXT_PUBLIC_SOLANA_RPC_URL: https://api.mainnet-beta.solana.com
+  env_file: .env.workers
+  environment:
+    NODE_ENV: production
+  init: true
+  restart: unless-stopped
+  logging:
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: "3"
+
+services:
+  indexer:
+    <<: *worker
+    command: [node, --import, tsx, workers/indexer.ts]
+    stop_grace_period: 2m
+    healthcheck:
+      test: [CMD, node, deploy/worker-health.cjs, indexer]
+      interval: 30s
+      timeout: 10s
+      start_period: 2m
+      retries: 3
+  cards:
+    <<: *worker
+    profiles: [cards]
+    command: [node, --import, tsx, workers/card-payments.ts]
+    stop_grace_period: 3m
+    environment:
+      NODE_ENV: production
+      CARD_PAYMENT_KEYPAIR_PATH: /run/secrets/card_payment_wallet
+    secrets: [card_payment_wallet]
+    volumes:
+      - ./deploy/secrets/card-worker.json:/app/.secrets/card-worker.json:ro
+    healthcheck:
+      test: [CMD, node, deploy/worker-health.cjs, cards]
+      interval: 30s
+      timeout: 10s
+      start_period: 45s
+      retries: 3
+
+secrets:
+  card_payment_wallet:
+    file: ./.secrets/card-payment-wallet.json
