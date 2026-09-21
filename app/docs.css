@@ -30,4 +30,4 @@
 @media(max-width:460px){.site-footer-links{grid-template-columns:1fr}.site-footer-bottom{flex-direction:column;gap:9px}}
 .docs-content>.docs-kicker{font-size:10px;line-height:1.5;color:var(--accent);margin-bottom:16px}
 
-.site-footer-launch{display:flex;align-items:center;flex-wrap:wrap;gap:6px;min-width:0}.site-footer-contract{display:inline-block;max-width:100%;font-family:monospace;overflow-wrap:anywhere;filter:blur(5px);user-select:none;pointer-events:none}
+.site-footer-launch{display:flex;align-items:center;flex-wrap:wrap;gap:6px;min-width:0}.site-footer-contract{display:inline-block;max-width:100%;font-family:monospace;overflow-wrap:anywhere}
