@@ -5,7 +5,7 @@ import {live,HttpError} from '@/lib/config';
 import {redis,rateLimit} from '@/lib/redis';
 import {rpc} from '@/lib/solana';
 import {Keypair,VersionedTransaction} from '@solana/web3.js';
-import {decrypt} from '@/lib/crypto';
+import {decrypt,encrypt} from '@/lib/crypto';
 import bs58 from 'bs58';
 export const POST=route(async request=>{
   origin(request);live('LAUNCHES_ENABLED');
@@ -30,6 +30,15 @@ export const POST=route(async request=>{
   if(!(await rpc().isBlockhashValid(tx.recentBlockhash!,{commitment:'confirmed'})).value)throw new HttpError(409,'This launch expired. Prepare it again. No transaction was submitted.');
   const simulation=await rpc().simulateTransaction(new VersionedTransaction(tx.compileMessage()),{sigVerify:false,commitment:'confirmed'});
   if(simulation.value.err)throw new HttpError(409,'The approved launch could not be simulated. Prepare it again. No transaction was submitted.');
-  const signature=await rpc().sendRawTransaction(tx.serialize(),{skipPreflight:false,maxRetries:3,preflightCommitment:'confirmed'});
-  return json({signature});
+  // Persist before sending so confirmation can rebroadcast identical bytes after a dropped RPC response.
+  const receiptKey=`submitted-launch:${input.mint}`;
+  const receipt={signature:knownSignature,blockhash:tx.recentBlockhash!,transaction:tx.serialize().toString('base64')};
+  const saved=await redis().set(receiptKey,encrypt(receipt),'EX',86400,'NX');
+  if(!saved){
+    const existing=decrypt<typeof receipt>((await redis().get(receiptKey))!);
+    if(existing.signature!==knownSignature)throw new HttpError(409,'A different transaction is already submitted for this launch.');
+  }
+  try{await rpc().sendRawTransaction(tx.serialize(),{skipPreflight:false,maxRetries:20,preflightCommitment:'confirmed'});}
+  catch{console.warn('Launch broadcast needs confirmation or retry.');}
+  return json({signature:knownSignature});
 });

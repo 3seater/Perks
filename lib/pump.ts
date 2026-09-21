@@ -19,7 +19,7 @@ export async function createLaunch(user: string, name: string, symbol: string, u
     amount=getBuyTokenAmountFromSolAmount({global,feeConfig,mintSupply:null,bondingCurve:null,amount:solAmount,quoteMint:NATIVE_MINT});
     instructions=await PUMP_SDK.createV2AndBuyInstructions({...args,global,amount,solAmount});
   }
-  const block = await rpc().getLatestBlockhash('finalized');
+  const block = await rpc().getLatestBlockhash('confirmed');
   const transaction = new Transaction({feePayer:new PublicKey(user),...block}).add(ComputeBudgetProgram.setComputeUnitLimit({units:500000}),...instructions);
   // The wallet may add safety assertions and priority fees before signing.
   // Keep this short-lived mint signer encrypted server-side for the final message.
@@ -31,8 +31,9 @@ export async function createLaunch(user: string, name: string, symbol: string, u
   return {mint:mint.publicKey.toBase58(),mintSignerEncrypted,transaction:transaction.serialize({requireAllSignatures:false}).toString('base64'),initialBuyLamports:solAmount.toString(),maximumBuyLamports:solAmount.add(solAmount.divn(100)).toString(),tokenAmount:amount.toString(),estimatedDebitLamports:after===undefined||after===null?null:Math.max(0,balance-after).toString(),networkFeeLamports:fee.value?.toString()??null,creatorRecipient:args.creator.toBase58(),...block};
 }
 export async function verifyLaunch(mint: string, wallet: string, signature: string, expected:{name:string;symbol:string;metadataUri:string}) {
-  const [transaction, account, supply] = await Promise.all([
-    rpc().getTransaction(signature,{commitment:'finalized',maxSupportedTransactionVersion:0}),
+  const transaction = await rpc().getTransaction(signature,{commitment:'finalized',maxSupportedTransactionVersion:0});
+  if (!transaction || transaction.meta?.err) throw new HttpError(409,'Launch is not finalized yet.');
+  const [account, supply] = await Promise.all([
     rpc().getAccountInfo(bondingCurvePda(new PublicKey(mint)),'finalized'),
     rpc().getTokenSupply(new PublicKey(mint),'finalized')
   ]);
