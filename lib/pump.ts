@@ -4,6 +4,7 @@ import {EventParser,BN} from '@coral-xyz/anchor';
 import {NATIVE_MINT} from '@solana/spl-token';
 import { rpc, creatorRecipient } from './solana';
 import { HttpError } from './config';
+import {prepareWalletFirstLaunch} from './launch-transaction';
 export async function createLaunch(user: string, name: string, symbol: string, uri: string,initialBuySol='0') {
   const mint = Keypair.generate();
   const [whole,fraction='']=initialBuySol.split('.');
@@ -20,12 +21,12 @@ export async function createLaunch(user: string, name: string, symbol: string, u
   }
   const block = await rpc().getLatestBlockhash('finalized');
   const transaction = new Transaction({feePayer:new PublicKey(user),...block}).add(ComputeBudgetProgram.setComputeUnitLimit({units:500000}),...instructions);
-  transaction.partialSign(mint);
+  const mintSignature=prepareWalletFirstLaunch(transaction,mint);
   const simulation=await rpc().simulateTransaction(new VersionedTransaction(transaction.compileMessage()),{sigVerify:false,commitment:'confirmed',accounts:{encoding:'base64',addresses:[user]}});
   if(simulation.value.err)throw new HttpError(409,'Launch simulation failed. Check that your wallet has enough SOL for creation, rent and your initial buy. No funds were spent.');
   const [balance,fee]=await Promise.all([rpc().getBalance(new PublicKey(user),'confirmed'),rpc().getFeeForMessage(transaction.compileMessage(),'confirmed')]);
   const after=simulation.value.accounts?.[0]?.lamports;
-  return {mint:mint.publicKey.toBase58(),transaction:transaction.serialize({requireAllSignatures:false}).toString('base64'),initialBuyLamports:solAmount.toString(),maximumBuyLamports:solAmount.add(solAmount.divn(100)).toString(),tokenAmount:amount.toString(),estimatedDebitLamports:after===undefined||after===null?null:Math.max(0,balance-after).toString(),networkFeeLamports:fee.value?.toString()??null,creatorRecipient:args.creator.toBase58(),...block};
+  return {mint:mint.publicKey.toBase58(),mintSignature,transaction:transaction.serialize({requireAllSignatures:false}).toString('base64'),initialBuyLamports:solAmount.toString(),maximumBuyLamports:solAmount.add(solAmount.divn(100)).toString(),tokenAmount:amount.toString(),estimatedDebitLamports:after===undefined||after===null?null:Math.max(0,balance-after).toString(),networkFeeLamports:fee.value?.toString()??null,creatorRecipient:args.creator.toBase58(),...block};
 }
 export async function verifyLaunch(mint: string, wallet: string, signature: string, expected:{name:string;symbol:string;metadataUri:string}) {
   const [transaction, account, supply] = await Promise.all([

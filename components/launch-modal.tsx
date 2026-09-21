@@ -49,7 +49,7 @@ export function LaunchModal({open,onOpenChange,demo}:{open:boolean;onOpenChange:
         const tx=Transaction.from(Uint8Array.from(atob(prepared.transaction),c=>c.charCodeAt(0)));
         if(tx.feePayer?.toBase58()!==address)throw new Error('Reconnect the wallet that prepared this launch.');
         const signed=await signTransaction(tx);
-        next={mint:prepared.mint,transaction:btoa(String.fromCharCode(...signed.serialize()))};remember(next);
+        next={mint:prepared.mint,transaction:btoa(String.fromCharCode(...signed.serialize({requireAllSignatures:false})))};remember(next);
       }
       if(!next.signature){const sent=await api<{signature:string}>('/api/launch/submit',{mint:next.mint,transaction:next.transaction});next={mint:next.mint,signature:sent.signature};remember(next);}
       for(let attempt=0;attempt<24;attempt++){

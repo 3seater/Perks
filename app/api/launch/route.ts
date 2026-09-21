@@ -40,8 +40,8 @@ export const POST = route(async request => {
   if (!(png || jpg || webp)) throw new HttpError(400,'Unsupported image format.');
   await consumeLaunchProof({...input,imageHash:createHash('sha256').update(bytes).digest('hex')},proof.challengeId,proof.signature);
   const uploaded = await metadata(image,input.name,input.symbol,input.description);
-  const launch = await createLaunch(input.wallet,input.name,input.symbol,uploaded.uri,input.initialBuySol);
+  const {mintSignature,...launch} = await createLaunch(input.wallet,input.name,input.symbol,uploaded.uri,input.initialBuySol);
   await db.token.create({data:{mintAddress:launch.mint,name:input.name,symbol:input.symbol,description:input.description,imageUrl:uploaded.imageUrl,metadataUri:uploaded.uri,creatorWallet:input.wallet}});
-  await redis().set(`prepared-launch:${launch.mint}`,JSON.stringify({message:Transaction.from(Buffer.from(launch.transaction,'base64')).serializeMessage().toString('base64')}),'EX',86400);
+  await redis().set(`prepared-launch:${launch.mint}`,JSON.stringify({message:Transaction.from(Buffer.from(launch.transaction,'base64')).serializeMessage().toString('base64'),mintSignature}),'EX',86400);
   return json(launch);
 });
