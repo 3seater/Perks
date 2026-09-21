@@ -2,7 +2,7 @@ import Redis from 'ioredis';
 import { randomUUID } from 'node:crypto';
 import { required, HttpError } from './config';
 let instance: Redis;
-export const redis = () => instance ??= new Redis(required('REDIS_URL'), { maxRetriesPerRequest: 2, enableOfflineQueue: true, connectTimeout:5000, commandTimeout:5000, lazyConnect: false });
+export const redis = () => instance ??= new Redis(process.env.PERKS_REDIS_URL || required('REDIS_URL'), { maxRetriesPerRequest: 2, enableOfflineQueue: true, connectTimeout:5000, commandTimeout:5000, lazyConnect: false });
 export async function rateLimit(key: string, max = 10, seconds = 60) {
   const count = Number(await redis().eval("local n=redis.call('INCR',KEYS[1]); if n==1 then redis.call('EXPIRE',KEYS[1],ARGV[1]) end; return n", 1, `rate:${key}`, seconds));
   if (count > max) throw new HttpError(429, 'Please wait before trying again.');

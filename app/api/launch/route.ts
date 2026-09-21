@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { route, origin, json } from '@/lib/http';
 import { live, HttpError } from '@/lib/config';
-import { turnstile } from '@/lib/turnstile';
 import { metadata } from '@/lib/ipfs';
 import { createLaunch } from '@/lib/pump';
 import { db } from '@/lib/db';
@@ -11,7 +10,7 @@ import {required} from '@/lib/config';
 import {rpc} from '@/lib/solana';
 import {rewardShare} from '@/lib/trade-accounting';
 import {createHash} from 'node:crypto';
-import {launchIntent,pilotWallet,consumeLaunchProof} from '@/lib/launch-access';
+import {launchIntent,consumeLaunchProof} from '@/lib/launch-access';
 import {redis} from '@/lib/redis';
 import {Transaction} from '@solana/web3.js';
 export const runtime = 'nodejs';
@@ -29,10 +28,9 @@ export const POST = route(async request => {
   if (Number(request.headers.get('content-length')) > 5_000_000) throw new HttpError(413,'Upload too large.');
   const form = await request.formData();
   const fields=Object.fromEntries(form);
-  const proof=z.object({challengeId:z.string().uuid(),signature:z.string().min(1).max(128),turnstileToken:z.string().max(2048).optional()}).parse(fields);
+  const proof=z.object({challengeId:z.string().uuid(),signature:z.string().min(1).max(128)}).parse(fields);
   const input = launchIntent.omit({imageHash:true}).parse(fields);
   await rateLimit(`launch:${input.wallet}`,3,600);
-  if(!pilotWallet(input.wallet))await turnstile(proof.turnstileToken||'');
   const image = form.get('image');
   if (!(image instanceof File) || image.size > 4_000_000 || image.size < 8) throw new HttpError(400,'Choose a PNG, JPEG, or WebP image under 4 MB.');
   const bytes = new Uint8Array(await image.arrayBuffer());

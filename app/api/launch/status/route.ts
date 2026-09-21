@@ -7,8 +7,7 @@ export const GET=route(async()=>{
   if(demo()||process.env.LAUNCHES_ENABLED!=='true')reason='Live launches are being prepared.';
   else if(rewardBps===null)reason='The reward percentage must be configured first.';
   else if(process.env.NEXT_PUBLIC_SOLANA_NETWORK!=='mainnet-beta')reason='Mainnet configuration is not ready.';
-  else if(!process.env.PILOT_LAUNCH_WALLET&&!process.env.TURNSTILE_SECRET_KEY)reason='Launch verification is not configured.';
   else if(process.env.METADATA_PROVIDER!=='pump'&&!process.env.PINATA_JWT)reason='Token image storage is not configured.';
   else try{await readyCursor();}catch{reason='The live indexer is catching up. Try again shortly.';}
-  return json({enabled:!reason,pilot:!!process.env.PILOT_LAUNCH_WALLET,rewardBps,reason});
+  return json({enabled:!reason,pilot:false,rewardBps,reason});
 });

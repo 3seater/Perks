@@ -4,7 +4,6 @@ import { useWallet } from '@solana/wallet-adapter-react';
 import bs58 from 'bs58';
 import { WalletMultiButton } from './wallet-button';
 import { Transaction } from '@solana/web3.js';
-import { Turnstile } from '@marsidev/react-turnstile';
 import { ArrowUpRight, ImagePlus, LoaderCircle, CheckCircle2 } from 'lucide-react';
 import { Dialog } from './ui/dialog';
 import { api } from '@/lib/client';
@@ -35,7 +34,7 @@ export function LaunchModal({open,onOpenChange,demo}:{open:boolean;onOpenChange:
   const {publicKey,signMessage,signTransaction}=useWallet();
   const [status,setStatus]=useState<{enabled:boolean;pilot:boolean;rewardBps:number|null;reason:string}|null>(null);
   const [prepared,setPrepared]=useState<{mint:string;transaction:string;initialBuyLamports:string;maximumBuyLamports:string;tokenAmount:string;estimatedDebitLamports:string|null;creatorRecipient:string}|null>(null);
-  const [token,setToken]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState(''),[success,setSuccess]=useState('');
+  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[success,setSuccess]=useState('');
   const [pending,setPending]=useState<{mint:string;signature?:string;transaction?:string}|null>(null);
   const address=publicKey?.toBase58(),storageKey=address?`perks-launch:${address}`:null;
   useEffect(()=>{setPrepared(null);setPending(null);setSuccess('');if(storageKey){try{const raw=sessionStorage.getItem(storageKey);if(raw)setPending(JSON.parse(raw));}catch{}}},[storageKey]);
@@ -69,7 +68,7 @@ export function LaunchModal({open,onOpenChange,demo}:{open:boolean;onOpenChange:
       const imageHash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',await image.arrayBuffer())),b=>b.toString(16).padStart(2,'0')).join('');
       const challenge=await api<{challengeId:string;message:string}>('/api/launch/challenge',{wallet:publicKey.toBase58(),name:String(form.get('name')).trim(),symbol:String(form.get('symbol')),description:String(form.get('description')).trim(),initialBuySol:String(form.get('initialBuySol')||'0'),imageHash});
       const signature=bs58.encode(await signMessage(new TextEncoder().encode(challenge.message)));
-      form.set('wallet',publicKey.toBase58());form.set('turnstileToken',token);form.set('challengeId',challenge.challengeId);form.set('signature',signature);
+      form.set('wallet',publicKey.toBase58());form.set('challengeId',challenge.challengeId);form.set('signature',signature);
       setPrepared(await api<NonNullable<typeof prepared>>('/api/launch',form));
     }catch(e){setError(e instanceof Error?e.message:'Launch failed.');}finally{setBusy(false);}
   }
@@ -83,8 +82,7 @@ export function LaunchModal({open,onOpenChange,demo}:{open:boolean;onOpenChange:
     <LaunchImageField/>
     <label>Initial buy in SOL (optional)<input name="initialBuySol" inputMode="decimal" pattern="[0-9]{1,3}(\.[0-9]{1,9})?" defaultValue="0" required/></label>
     <div className="launch-info"><span>Network <b>Solana mainnet</b></span><span>Creator fees <b>Perks treasury → trader rewards</b></span>{status?.rewardBps!==null&&status?.rewardBps!==undefined&&<span>Trader share <b>{status.rewardBps/100}% of the creator fee</b></span>}</div>
-    {!demo&&!status?.pilot&&process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY&&<Turnstile siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY} options={{action:'launch',theme:'dark'}} onSuccess={setToken} onExpire={()=>setToken('')}/>}
-    {!demo&&!publicKey?<WalletMultiButton/>:<button className="button primary full" disabled={busy||(!demo&&(!status?.enabled||(!status.pilot&&!token)))}>{busy?<LoaderCircle className="spin" size={18}/>:<ArrowUpRight size={18}/>} {busy?'Preparing your launch…':demo?'Preview launch':'Review launch'}</button>}
+    {!demo&&!publicKey?<WalletMultiButton/>:<button className="button primary full" disabled={busy||(!demo&&!status?.enabled)}>{busy?<LoaderCircle className="spin" size={18}/>:<ArrowUpRight size={18}/>} {busy?'Preparing your launch…':demo?'Preview launch':'Review launch'}</button>}
     {(demo||status?.enabled||status?.reason!=='The live indexer is catching up. Try again shortly.')&&<p className="secure-note">{demo?'Demo mode · no transaction or network fee':status?.enabled?'Your wallet pays network and creation costs. No added Perks launch fee.':status?.reason||'Checking launch readiness…'}</p>}{error&&<p role="alert" className="error-message">{error}</p>}
     </form>}
   </Dialog>;
