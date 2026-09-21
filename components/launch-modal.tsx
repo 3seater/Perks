@@ -35,13 +35,14 @@ export function LaunchModal({open,onOpenChange,demo}:{open:boolean;onOpenChange:
   const [status,setStatus]=useState<{enabled:boolean;pilot:boolean;rewardBps:number|null;reason:string}|null>(null);
   const [prepared,setPrepared]=useState<{mint:string;transaction:string;initialBuyLamports:string;maximumBuyLamports:string;tokenAmount:string;estimatedDebitLamports:string|null;creatorRecipient:string}|null>(null);
   const [busy,setBusy]=useState(false),[error,setError]=useState(''),[success,setSuccess]=useState('');
+  const [canRestart,setCanRestart]=useState(false);
   const [pending,setPending]=useState<{mint:string;signature?:string;transaction?:string}|null>(null);
   const address=publicKey?.toBase58(),storageKey=address?`perks-launch:${address}`:null;
   useEffect(()=>{setPrepared(null);setPending(null);setSuccess('');if(storageKey){try{const raw=sessionStorage.getItem(storageKey);if(raw)setPending(JSON.parse(raw));}catch{}}},[storageKey]);
   useEffect(()=>{if(open&&!demo)void api<typeof status>('/api/launch/status').then(setStatus).catch(()=>setStatus(null));},[open,demo]);
   function remember(value:typeof pending){setPending(value);if(storageKey){if(value)sessionStorage.setItem(storageKey,JSON.stringify(value));else sessionStorage.removeItem(storageKey);}}
   async function confirm() {
-    setBusy(true);setError('');
+    setBusy(true);setError('');setCanRestart(false);
     try{
       let next=pending;
       if(!next){
@@ -56,7 +57,7 @@ export function LaunchModal({open,onOpenChange,demo}:{open:boolean;onOpenChange:
         try{await api('/api/launch/confirm',{mint:next.mint,signature:next.signature});setSuccess(next.mint);remember(null);setPrepared(null);window.dispatchEvent(new Event('perks:launched'));return;}
         catch{if(attempt===23)throw new Error('Your launch was submitted. Recheck its finalization before starting another token.');await new Promise(resolve=>setTimeout(resolve,2500));}
       }
-    }catch(e){setError((e as Error).message);}finally{setBusy(false);}
+    }catch(e){const message=(e as Error).message;setError(message);setCanRestart(message.includes('No transaction was submitted.')||message==='The previous launch transaction failed on-chain. Prepare it again.');}finally{setBusy(false);}
   }
   async function submit(event:React.FormEvent<HTMLFormElement>) {
     event.preventDefault();setBusy(true);setError('');
@@ -74,6 +75,7 @@ export function LaunchModal({open,onOpenChange,demo}:{open:boolean;onOpenChange:
   }
   if(prepared||pending)return <Dialog className="launch-modal" open={open} onOpenChange={value=>{if(!busy)onOpenChange(value);}} title={pending?'Confirming your launch':'Review your launch'} description="Solana mainnet · your wallet approves the transaction.">
     <div className="launch-form">{pending?<p>A signed launch is awaiting confirmation. Rechecking will not create another token.</p>:prepared&&<><div className="launch-info"><span>Initial buy <b>{Number(prepared.initialBuyLamports)/1e9} SOL</b></span><span>Tokens received <b>{(Number(prepared.tokenAmount)/1e6).toLocaleString('en-US',{maximumFractionDigits:6})}</b></span><span>Estimated wallet debit <b>{prepared.estimatedDebitLamports===null?'Unavailable':`${Number(prepared.estimatedDebitLamports)/1e9} SOL`}</b></span></div><p className="secure-note">The estimate includes your buy, account creation and network fees. Your wallet shows the final transaction.</p><p className="secure-note" style={{overflowWrap:'anywhere'}}>Creator-fee treasury: {prepared.creatorRecipient}</p></>}
+    {canRestart&&pending&&!pending.signature&&<button className="button primary full" disabled={busy} onClick={()=>{remember(null);setPrepared(null);setError("");setCanRestart(false);}}>Prepare a fresh launch</button>}
     {!pending&&prepared&&Number(prepared.initialBuyLamports)>0&&<p className="secure-note">Initial-buy limit: {Number(prepared.maximumBuyLamports)/1e9} SOL, including 1% slippage tolerance. Network fees and account rent are separate.</p>}{pending?.signature&&<a href={`https://solscan.io/tx/${pending.signature}`} target="_blank" rel="noreferrer">View transaction</a>}<button className="button primary full" onClick={confirm} disabled={busy}>{busy?<LoaderCircle className="spin" size={18}/>:<ArrowUpRight size={18}/>} {busy?'Checking your launch…':pending?'Recheck submitted launch':'Approve launch in wallet'}</button>{!pending&&<button className="text-button" disabled={busy} onClick={()=>setPrepared(null)}>Back to details</button>}{error&&<p role="alert" className="error-message">{error}</p>}</div>
   </Dialog>;
   return <Dialog className="launch-modal" open={open} onOpenChange={value=>{if(!busy)onOpenChange(value);}} title="Create token" description={demo?'Try the launch form. No token will be created.':'Launch on a Pump.fun curve. Creator fees fund trading rewards.'}>
